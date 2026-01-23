@@ -9,11 +9,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Add this step to fix the permission error
-      - name: Fix permissions
+      - name: Fix Artem Permission Bug
         run: |
-          sudo chown -R $USER:$USER .
-          chmod -R 777 .
+          # Create the missing user that the action expects
+          sudo useradd -m user
+          # Ensure the workspace is writable by everyone so the container can't fail
+          sudo chmod -R 777 .
+          # Pre-create the output directory
+          mkdir -p bin
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
