@@ -11,10 +11,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
-          python-version: '3.11'
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
 
       - name: Install Dependencies
         run: |
@@ -25,7 +36,9 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          yes | buildozer android debug
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          # We use -v to see errors, but caching will keep it fast
+          yes | buildozer -v android debug
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
