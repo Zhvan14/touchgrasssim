@@ -16,7 +16,6 @@ jobs:
           command: buildozer android debug
           buildozer_version: stable
         env:
-          # This tells the action to use the GitHub runner user instead of 'user'
           USER: runner
 
       - name: Upload Artifact
@@ -42,7 +41,6 @@ jobs:
           command: buildozer android debug
           buildozer_version: stable
         env:
-          # This tells the action to use the GitHub runner user instead of 'user'
           USER: runner
 
       - name: Upload Artifact
