@@ -9,14 +9,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fix Artem Permission Bug
-        run: |
-          # Create the missing user that the action expects
-          sudo useradd -m user
-          # Ensure the workspace is writable by everyone so the container can't fail
-          sudo chmod -R 777 .
-          # Pre-create the output directory
-          mkdir -p bin
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: stable
+        env:
+          # This tells the action to use the GitHub runner user instead of 'user'
+          USER: runner
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyFreeAPK
+          path: bin/*.apk
+name: Build APK
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Build with Buildozer
         uses: ArtemSBulgakov/buildozer-action@v1
@@ -24,6 +41,9 @@ jobs:
         with:
           command: buildozer android debug
           buildozer_version: stable
+        env:
+          # This tells the action to use the GitHub runner user instead of 'user'
+          USER: runner
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
