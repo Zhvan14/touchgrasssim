@@ -11,12 +11,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Free Disk Space
+      - name: Free Space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - name: Cache Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            ~/.android
+            .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -34,24 +44,13 @@ jobs:
       - name: Build with Buildozer
         run: |
           export JAVA_HOME=$JAVA_HOME_17_X64
-          # Force a clean start to fix the broken pipe
-          buildozer android clean
-          # Run build with limited parallel jobs to save RAM
+          mkdir -p .buildozer/android/platform
+          if [ ! -d ".buildozer/android/platform/python-for-android" ]; then
+            git clone https://github.com/kivy/python-for-android.git .buildozer/android/platform/python-for-android
+          fi
           yes | buildozer -v android debug
         env:
-          # This tells the compiler to use less RAM
           MAX_JOBS: 1
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: TouchGrass-APK
-          path: bin/*.apk
-      - name: Build with Buildozer
-        run: |
-          export JAVA_HOME=$JAVA_HOME_17_X64
-          # We use -v to see errors, but caching will keep it fast
-          yes | buildozer -v android debug
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
